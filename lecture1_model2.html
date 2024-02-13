@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magnetic Induction Simulation</title>
+    <style>
+        #canvas {
+            border: 1px solid #000;
+        }
+    </style>
+</head>
+<body>
+<h2>Моделирование магнитного поля</h2>
+<label for="numCurrents">Количество токов:</label>
+<input type="number" id="numCurrents" min="1" value="1">
+<button onclick="setupSimulation()">Старт</button>
+<p>Каждый пиксель показывает значение индукции в диапазоне от 0 до 255. Если 0, то пиксель синий, с увеличением индукции увеличивается яроксть пикселя. В центре, как правило, очень высокое значение, больше 255, поэтому там пиксели красятся одним цветом. Значение индукции будет увеличино в 10^8 раз, что-то видно становится при значениях силы тока от 100А. На графике направление тока будет обозначено знаками "+" и "." примерно в центре поля</p>
+
+
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const currents = [];
+    const B_scale = 100000000
+
+    function setupSimulation() {
+        const numCurrents = document.getElementById('numCurrents').value;
+        currents.length = 0;
+
+        for (let i = 0; i < numCurrents; i++) {
+            const value = prompt(`Введите величину тока ${i + 1}:`);
+            const x = prompt(`Введите координату X тока ${i + 1}:`);
+            const y = prompt(`Введите координату Y тока ${i + 1}:`);
+            const direction = confirm(`Ток ${i + 1} направлен в экран?`);
+            currents.push({ value: parseFloat(value), position: { x: parseFloat(x), y: parseFloat(y) }, direction: direction});
+        }
+
+        drawLinesOfForce();
+    }
+
+    function drawLinesOfForce() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let y = 0; y < canvas.height; y += 1) {
+            for (let x = 0; x < canvas.width; x += 1) {
+                const magneticInduction = calculateMagneticInduction({ x, y });
+                const color = getMagnitudeColor(magneticInduction);
+
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, 1, 1);
+            }
+        }
+        ctx.fillStyle = 'black';
+        ctx.font = 'bold 14px Arial';
+        currents.forEach(current => {
+            ctx.fillText(current.direction ? '+' : '.', current.position.x- 3, current.position.y + 3);
+        })
+    }
+
+    function calculateMagneticInduction(point) {
+        let totalB_x = 0;
+        let totalB_y = 0;
+
+        currents.forEach(current => {
+            const dx = point.x - current.position.x
+            const dy = point.y - current.position.y
+            const angle = Math.atan2(dy, dx) + (Math.PI / 2) * (current.direction ? -1 : 1)
+            const r = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+            const B = (current.value * 4 * Math.PI * 0.0000001 / (2 * Math.PI * r)) * B_scale;
+            totalB_x += B * Math.cos(angle)
+            totalB_y += B * Math.sin(angle)
+        });
+
+        return Math.sqrt(Math.pow(totalB_x, 2) + Math.pow(totalB_y, 2));
+    }
+
+    function getMagnitudeColor(magneticInduction) {
+        const intensity = magneticInduction;
+        const r = Math.min(intensity, 255)
+        const g = 0
+        const b = 255
+        return `rgb(${r}, ${g}, ${b})`;
+    }
+</script>
+</body>
+</html>
