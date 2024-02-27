@@ -114,7 +114,7 @@
             totalB_y += B * Math.sin(angle)
         });
 
-        return {total: Math.sqrt(Math.pow(totalB_x, 2) + Math.pow(totalB_y, 2)), angle: Math.atan2(totalB_y, totalB_x)};
+        return {total: Math.sqrt(Math.pow(totalB_x, 2) + Math.pow(totalB_y, 2)), angle: Math.atan2(totalB_y, totalB_x) + Math.PI};
     }
 
     function getMagnitudeColor(magneticInduction) {
