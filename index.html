@@ -19,12 +19,22 @@
 
 
 <canvas id="canvas" width="500" height="500"></canvas>
+<div id="magneticInductionDisplay"></div>
 
 <script>
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
+    const magneticInductionDisplay = document.getElementById('magneticInductionDisplay');
     const currents = [];
     const B_scale = 100000000
+
+    canvas.addEventListener('mousemove', function(event) {
+        const rect = canvas.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        const magneticInduction = calculateMagneticInduction({ x, y });
+        magneticInductionDisplay.innerHTML = `Магнитная индукция в этой точке: ${(magneticInduction.total / B_scale).toFixed(10)} T`;
+    });
 
     function setupSimulation() {
         const numCurrents = document.getElementById('numCurrents').value;
